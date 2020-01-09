@@ -9,7 +9,7 @@ namespace Web.Models
 
     public class Order
     {
-        public int OrderId { get; set; }
+        public Int32 OrderId { get; set; }
 
         public string CompanyName { get; set; }
 

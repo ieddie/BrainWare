@@ -13,6 +13,8 @@ namespace Web.Infrastructure
         public List<Order> GetOrdersForCompany(int CompanyId)
         {
             var orders = Database.GetOrderDetails();
+
+            // create a dictinionary to be able to look up orders quickly
             Dictionary<Int32, Order> orderLookup = new Dictionary<int, Order>();
             foreach (var order in orders)
             {
