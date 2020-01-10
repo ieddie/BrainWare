@@ -3,6 +3,7 @@ using Web.Models;
 
 namespace Web.Infrastructure
 {
+    using BrainWare;
     using System.Data;
     using System.Data.Common;
     using System.Data.SqlClient;
