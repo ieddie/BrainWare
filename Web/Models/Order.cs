@@ -11,8 +11,6 @@ namespace Web.Models
     {
         public Int32 OrderId { get; set; }
 
-        public string CompanyName { get; set; }
-
         public string Description { get; set; }
 
         public decimal OrderTotal { get; set; }
@@ -24,9 +22,8 @@ namespace Web.Models
             OrderProducts = new List<OrderProduct>();
         }
 
-        public Order(string companyName, string description, int orderId)
+        public Order(string description, int orderId)
         {
-            CompanyName = companyName;
             Description = description;
             OrderId = orderId;
             OrderTotal = 0;
@@ -63,5 +60,12 @@ namespace Web.Models
         public string Name { get; set; }
 
         public decimal Price { get; set; }
+    }
+
+    public class Company
+    {
+        public string Name { get; set; }
+         
+        public Int32 Id { get; set; }
     }
 }

@@ -10,27 +10,45 @@ namespace Web.Infrastructure
 
     public class OrderService
     {
-        public List<Order> GetOrdersForCompany(int CompanyId)
+        public List<Order> GetOrdersForCompany(int companyId)
         {
-            var orders = Database.GetOrderDetails();
+            List<Order> orders = null;
 
-            // create a dictinionary to be able to look up orders quickly
-            Dictionary<Int32, Order> orderLookup = new Dictionary<int, Order>();
-            foreach (var order in orders)
+            var ds = Database.GetOrders(companyId);
+            if (ds != null && ds.Tables.Count == 2 && ds.Tables[0].Rows.Count > 0)
             {
-                orderLookup.Add(order.OrderId, order);
+                // create a dictinionary to be able to look up orders quickly
+                Dictionary<Int32, Order> orderLookup = new Dictionary<Int32, Order>();
+                foreach (DataRow order in ds.Tables[0].Rows)
+                {
+                    var orderRecord = new Order(order[1].ToString(), Convert.ToInt32(order[0]));
+                    orderLookup.Add(orderRecord.OrderId, orderRecord);
+                }
+
+                foreach (DataRow row in ds.Tables[1].Rows)
+                {
+                    var orderProduct = new OrderProduct(Convert.ToInt32(row[1]), Convert.ToInt32(row[2]), Convert.ToDecimal(row[0]),
+                        Convert.ToInt32(row[3]), row[4].ToString(), Convert.ToDecimal(row[5]));
+
+
+                    var order = orderLookup[orderProduct.OrderId];
+
+                    order.OrderProducts.Add(orderProduct);
+                    order.OrderTotal = order.OrderTotal + (orderProduct.Price * orderProduct.Quantity);
+                }
+                orders = orderLookup.Values.ToList();
             }
-
-            var orderProducts = Database.GetOrderProducts();
-            foreach (var orderproduct in orderProducts)
+            else
             {
-                var order = orderLookup[orderproduct.OrderId];
-
-                order.OrderProducts.Add(orderproduct);
-                order.OrderTotal = order.OrderTotal + (orderproduct.Price * orderproduct.Quantity);
+                orders = new List<Order>();
             }
 
             return orders;
+        }
+
+        public List<Company> GetCompanies()
+        {
+            return Database.GetCompanies();
         }
     }
 }

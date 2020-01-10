@@ -13,35 +13,27 @@ namespace Web.Infrastructure
     {
         private static string _connectionStr = @"Data Source=(LocalDb)\MSSQLLocalDB;Initial Catalog=BrainWAre;Integrated Security=SSPI;AttachDBFilename=D:\tmp\ieddie\BrainWare\Web\App_Data\BrainWare.mdf";
 
-        public static List<Order> GetOrderDetails()
+        public static DataSet GetOrders(int companyId)
         {
-            // Get the orders
-            var query = "SELECT c.name, o.description, o.order_id FROM company c INNER JOIN [order] o on c.company_id=o.company_id";
-
-            List<Order> result = new List<Order>();
+            DataSet ds = new DataSet();
             SqlConnection connection = null;
             try
             {
                 connection = new SqlConnection(_connectionStr);
-                connection.Open();
-                using (SqlCommand command = new SqlCommand(query, connection))
+
+                using (SqlCommand command = new SqlCommand("OrdersGetByCompanyId", connection))
                 {
-                    using (SqlDataReader reader = command.ExecuteReader())
+                    command.CommandType = CommandType.StoredProcedure;
+                    command.Parameters.Add(new SqlParameter("@companyId", companyId));
+
+                    using (SqlDataAdapter da = new SqlDataAdapter(command))
                     {
-                        // Call Read before accessing data.
-                        while (reader.Read())
-                        {
-                            var row = (IDataRecord)reader;
-
-                            result.Add(new Order(row.GetString(0), row.GetString(1), row.GetInt32(2)));
-                        }
-
-                        // Call Close when done reading.
-                        reader.Close();
+                        // Fill the DataSet using default values for DataTable names, etc
+                        da.Fill(ds);
                     }
                 }
             }
-            catch(SqlException sqlEx) // let other types of exceptions "bubble up"
+            catch (SqlException sqlEx) // let other types of exceptions "bubble up"
             {
                 Debug.WriteLine(string.Concat("SqlException occured in GetOrderDetails(): ", sqlEx.Message));
                 throw new BrainWareException();
@@ -54,25 +46,20 @@ namespace Web.Infrastructure
                 }
             }
 
-            return result;
+            return ds;
         }
 
-        public static List<OrderProduct> GetOrderProducts()
+        public static List<Company> GetCompanies()
         {
-            // Get the orders
-            var query =
-                @"SELECT op.price, op.order_id, op.product_id, op.quantity, p.name, p.price 
-                FROM orderproduct op 
-                    INNER JOIN product p on op.product_id=p.product_id";
+            // Get all companies, even those with no orders
+            var query = @"SELECT name, company_id FROM company c";
 
-            List<OrderProduct> result = new List<OrderProduct>();
-
+            List<Company> companies = new List<Company>();
             SqlConnection connection = null;
             try
             {
                 connection = new SqlConnection(_connectionStr);
                 connection.Open();
-
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
@@ -80,7 +67,7 @@ namespace Web.Infrastructure
                         while (reader.Read())
                         {
                             var row = (IDataRecord)reader;
-                            result.Add(new OrderProduct(row.GetInt32(1), row.GetInt32(2), row.GetDecimal(0), row.GetInt32(3), row.GetString(4), row.GetDecimal(5)));
+                            companies.Add(new Company() { Name = row.GetString(0), Id = row.GetInt32(1) });
                         }
                         reader.Close();
                     }
@@ -88,7 +75,8 @@ namespace Web.Infrastructure
             }
             catch (SqlException sqlEx) // let other types of exceptions "bubble up"
             {
-                Debug.WriteLine(string.Concat("SqlException occured in GetOrderProducts(): ", sqlEx.Message));
+                Debug.WriteLine(string.Concat("SqlException occured in GetCompanies(): ", sqlEx.Message));
+                throw new BrainWareException();
             }
             finally
             {
@@ -98,8 +86,8 @@ namespace Web.Infrastructure
                 }
             }
 
-            return result;
+            return companies;
         }
-        
+
     }
 }
