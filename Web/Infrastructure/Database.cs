@@ -6,6 +6,7 @@ namespace Web.Infrastructure
     using System.Data;
     using System.Data.Common;
     using System.Data.SqlClient;
+    using System.Diagnostics;
 
     public static class Database
     {
@@ -17,9 +18,10 @@ namespace Web.Infrastructure
             var query = "SELECT c.name, o.description, o.order_id FROM company c INNER JOIN [order] o on c.company_id=o.company_id";
 
             List<Order> result = new List<Order>();
-
-            using (SqlConnection connection = new SqlConnection(_connectionStr))
+            SqlConnection connection = null;
+            try
             {
+                connection = new SqlConnection(_connectionStr);
                 connection.Open();
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
@@ -38,6 +40,18 @@ namespace Web.Infrastructure
                     }
                 }
             }
+            catch(SqlException sqlEx) // let other types of exceptions "bubble up"
+            {
+                Debug.WriteLine(string.Concat("SqlException occured in GetOrderDetails(): ", sqlEx.Message));
+                throw new BrainWareException();
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    connection.Close();
+                }
+            }
 
             return result;
         }
@@ -52,9 +66,12 @@ namespace Web.Infrastructure
 
             List<OrderProduct> result = new List<OrderProduct>();
 
-            using (SqlConnection connection = new SqlConnection(_connectionStr))
+            SqlConnection connection = null;
+            try
             {
+                connection = new SqlConnection(_connectionStr);
                 connection.Open();
+
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
@@ -66,6 +83,17 @@ namespace Web.Infrastructure
                         }
                         reader.Close();
                     }
+                }
+            }
+            catch (SqlException sqlEx) // let other types of exceptions "bubble up"
+            {
+                Debug.WriteLine(string.Concat("SqlException occured in GetOrderProducts(): ", sqlEx.Message));
+            }
+            finally
+            {
+                if (connection != null)
+                {
+                    connection.Close();
                 }
             }
 

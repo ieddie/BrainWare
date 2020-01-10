@@ -1,16 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+﻿using System.Collections.Generic;
 using System.Web.Http;
 
 namespace Web.Controllers
 {
-    using System.Web.Mvc;
     using Infrastructure;
     using Models;
+    using Filters;
+    using System.Web.Mvc;
 
+    [OrderExceptionFilter]
     public class OrderController : ApiController
     {
         [HttpGet]
