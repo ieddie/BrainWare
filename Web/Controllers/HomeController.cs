@@ -12,7 +12,8 @@ namespace Web.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            var comanies = new CompanyController().GetCompanies();
+            return View(comanies.Select(c => new SelectListItem() { Value = c.Id.ToString(), Text = c.Name }));
         }
 
 

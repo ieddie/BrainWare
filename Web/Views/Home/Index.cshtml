@@ -1,18 +1,28 @@
-﻿<div class="jumbotron">
+﻿
+@model IEnumerable<SelectListItem>
+
+<div class="jumbotron">
     <h1>BrainWare Orders</h1>
     <p class="lead">This is the BrainWare orders page! Welcome</p>
 </div>
 <div class="row">
-    <div class="col-md-12">
-        <h2>Your Orders</h2>
+    <div class="col-md-3">
+        @Html.DropDownList("Companies", @Model, "Select Company", new { @class = "form-control", id = "companyOrderId" })
+    </div>
+    <div class="col-md-2">
+        <button type="button" id="showOrders" class="btn btn-success">Show orders</button>
+    </div>
+    <div class="col-md-7">
         <div id="orders"></div>
     </div>
   
 </div>
 <script>
     $(document).ready(function () {
-        var service = new OrderService();
-        service.getOrders(displayOrders, displayError);
+        $('#showOrders').on('click', function(event) {
+            var service = new OrderService();
+            service.getOrders($("#companyOrderId").children("option:selected").val(), displayOrders, displayError);
+        });
     });
 </script>
 
